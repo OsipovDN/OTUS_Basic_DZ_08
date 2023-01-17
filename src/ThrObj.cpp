@@ -1,21 +1,28 @@
 #include "ThrObj.h"
+#include <ifstream>
+#include <algorithm>
+#include <iterator>
 #include <map>
 #include <string>
+
+
 using Counter = std::map<std::string, std::size_t>;
 struct Impl{
 	Counter word;
-	std::ifstream& in_;
-	Impl(std::ifstream& in) :in_(in) {};
+	std::istream& in_;
+	explicit Impl(std::istream& in) :in_(std::move(in)) {};
 };
 
-explicit ThrObj(std::ifstream& in):pImpl(new ThrObj::Impl(in)) {
-	Impl.in_ = in;
-	count_words(in, word);
+explicit ThrObj::ThrObj(std::istream& in):pImpl(new Impl(in)) {
+	count_words();
 };
-	~ThrObj() = default;
 
-void count_words(std::ifstream& stream, Counter& counter) {
-	std::for_each(std::ifstream_iterator<std::string>(stream),
-		std::ifstream_iterator<std::string>(),
-		[&counter](const std::string& s) { ++counter[s]; });   //s=tolower(s)
+explicit ThrObj::ThrObj(std::istream&&) = default;
+explicit ThrObj ThrObj::operator =(std::istream&&) = default;
+ThrObj::~ThrObj() = default;
+
+explicit void ThrObj::count_words() {
+	std::for_each(std::istream_iterator<std::string>(Impl::in_),
+		std::istream_iterator<std::string>(),
+		[&word](const std::string& s) { ++word[s]; });   //s=tolower(s)
 };

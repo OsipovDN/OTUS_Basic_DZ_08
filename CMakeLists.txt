@@ -6,7 +6,7 @@ file(GLOB SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_executable (countWords 
     FindWords.cpp
-    src/ThrObj.cpp
+    #src/ThrObj.cpp
 )
 
 target_include_directories(
