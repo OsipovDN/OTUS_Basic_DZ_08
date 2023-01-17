@@ -2,11 +2,23 @@ cmake_minimum_required (VERSION 3.8)
 
 project (countWords)
 
+file(GLOB SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
 add_executable (countWords 
-    src/FindWords.cpp
+    FindWords.cpp
+    src/ThrObj.cpp
+)
+
+target_include_directories(
+    countWords
+    PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src
+    )
+target_include_directories(
+    countWords PRIVATE 
+   ${CMAKE_CURRENT_SOURCE_DIR}/header
     )
 
-set_target_properties(countWords PROPERTIES
+set_target_properties(${TARGETS} PROPERTIES
 	CXX_STANDARD 17
 	CXX_STANDARD_REQUIRED ON
 )
