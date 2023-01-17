@@ -7,18 +7,18 @@
 
 
 using Counter = std::map<std::string, std::size_t>;
-struct Impl{
+struct Impl {
 	Counter word;
 	std::istream& in_;
 	explicit Impl(std::istream& in) :in_(std::move(in)) {};
 };
 
-explicit ThrObj::ThrObj(std::istream& in):pImpl(new Impl(in)) {
+explicit ThrObj::ThrObj(std::istream& in) :pImpl(new Impl(in)) {
 	count_words();
 };
 
 explicit ThrObj::ThrObj(std::istream&&) = default;
-explicit ThrObj ThrObj::operator =(std::istream&&) = default;
+explicit ThrObj& ThrObj::operator =(std::istream&&) = default;
 ThrObj::~ThrObj() = default;
 
 explicit void ThrObj::count_words() {

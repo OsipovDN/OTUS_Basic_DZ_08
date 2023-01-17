@@ -23,7 +23,7 @@ using WordTab = std::vector<std::map<std::string, std::size_t>>;
 
 void print_topk(std::ostream& stream, const Counter&, const size_t k);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cerr << "Usage: topk_words [FILES...]\n";
         return EXIT_FAILURE;
@@ -49,14 +49,14 @@ int main(int argc, char *argv[]) {
         std::vector<std::thread> vec;
         std::vector<map<std::string, std::size_t>> tabl;
         for (int i = 2, i < argc; ++i) {
-            std::ifstream in (argv[i]);
+            std::ifstream in(argv[i]);
             if (!in.is_open()) {
                 //Проверям открытие
                 std::cerr << "Failed to open file " << argv[2] << '\n';
                 return EXIT_FAILURE;
             }
 
-            vec[i]=std::thread (ThrObj(std::move(in),Counter&));
+            vec[i] = std::thread(ThrObj(std::move(in), Counter&));
         }
     }
 
@@ -76,10 +76,10 @@ void print_topk(std::ostream& stream, const Counter& counter, const size_t k) {
     }
     std::partial_sort(
         std::begin(words), std::begin(words) + k, std::end(words),
-        [](auto lhs, auto &rhs) { return lhs->second > rhs->second; });
+        [](auto lhs, auto& rhs) { return lhs->second > rhs->second; });
     std::for_each(
         std::begin(words), std::begin(words) + k,
-        [&stream](const Counter::const_iterator &pair) {
-            stream << std::setw(4) << pair->second << " " << pair->first<< '\n';
+        [&stream](const Counter::const_iterator& pair) {
+            stream << std::setw(4) << pair->second << " " << pair->first << '\n';
         });
 }

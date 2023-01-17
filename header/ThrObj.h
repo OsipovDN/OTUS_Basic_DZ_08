@@ -8,7 +8,7 @@ private:
 public:
 	explicit ThrObj(std::istream& in);
 	explicit ThrObj(std::istream&&);
-	explicit operator =(std::istream&&);
+	explicit ThrObj& operator =(std::istream&&);
 	~ThrObj();
 	void count_words();
 };
