@@ -18,6 +18,8 @@ const size_t TOPK = 10;
 using Counter = std::map<std::string, std::size_t>;
 using WordTab = std::vector<std::map<std::string, std::size_t>>;
 
+//std::string tolower(const std::string &str);
+void count(std::istream stream, Counter& obj);
 void count_words(std::istream stream, Counter& obj, std::mutex& m);
 
 void print_topk(std::ostream& stream, const Counter&, const size_t k);
