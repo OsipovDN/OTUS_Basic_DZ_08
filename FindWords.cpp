@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
             thr_vec.emplace_back(count_words,std::move(input), std::ref(freq_dict),std::ref(m));
             std::cout << argv[i] << std::endl;
         }
-        for (auto& ptr: ptr_vec) {
+        for (auto& ptr: thr_vec) {
             ptr.join();
         }
     }
