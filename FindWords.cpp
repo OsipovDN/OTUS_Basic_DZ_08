@@ -17,18 +17,15 @@
 
 const size_t TOPK = 10;
 
-
 using Counter = std::map<std::string, std::size_t>;
-
-void count_words(std::istream& stream, Counter& counter,std::mutex& mut);
-
+void count_words(std::istream& stream, Counter& counter);
 void print_topk(std::ostream& stream, const Counter&, const size_t k);
 
 int main(int argc, char* argv[]) {
     auto start = std::chrono::high_resolution_clock::now();
     std::vector<std::thread> thr_vec;
     Counter freq_dict;
-    std::mutex m;
+    std::mutex dict_m;
     if (argc <= 2) {
         std::cerr << "Usage: topk_words [FILES...]\n";
         return EXIT_FAILURE;
@@ -41,8 +38,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "Failed to open file " << argv[i] << '\n';
                 return EXIT_FAILURE;
             }
-            
-            thr_vec.emplace_back(count_words,std::move(input), std::ref(freq_dict));
+            auto work = [&freq_dict](std::istream& in) {count_words(std::move(in), freq_dict); };
+            thr_vec.emplace_back(work,std::move(input));
             std::cout << argv[i] << std::endl;
         }
         for (auto& ptr: thr_vec) {
@@ -50,7 +47,6 @@ int main(int argc, char* argv[]) {
         }
     }
         
-
     print_topk(std::cout, freq_dict, TOPK);
     auto end = std::chrono::high_resolution_clock::now();
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
@@ -58,16 +54,15 @@ int main(int argc, char* argv[]) {
 
 }       
 
-void count_words(std::istream& stream, Counter& counter, std::mutex& mut) {
-    Counter temp;
+void count_words(std::istream& stream, Counter& counter) {
     std::for_each(std::istream_iterator<std::string>(stream),
         std::istream_iterator<std::string>(),
-        [& temp](const std::string& s) {
-            ++temp[s];
+        [& counter](const std::string& s) {
+            ++counter[s];
         });
-    const std::lock_guard<std::mutex> lock(m);
-    counter = std::move(temp);
 }
+
+
 
 void print_topk(std::ostream& stream, const Counter& counter, const size_t k) {
     std::vector<Counter::const_iterator> words;
@@ -87,3 +82,4 @@ void print_topk(std::ostream& stream, const Counter& counter, const size_t k) {
                 << '\n';
         });
 }
+
