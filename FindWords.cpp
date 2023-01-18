@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
                 return EXIT_FAILURE;
             }
             
-            thr_vec.emplace_back(count_words,std::move(input), std::ref(freq_dict));
+            thr_vec.emplace_back(count_words,std::move(input), std::ref(freq_dict),std::ref(m));
             std::cout << argv[i] << std::endl;
         }
         for (auto& ptr: thr_vec) {
