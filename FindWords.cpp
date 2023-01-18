@@ -17,9 +17,10 @@
 
 const size_t TOPK = 10;
 
+
 using Counter = std::map<std::string, std::size_t>;
 
-void count_words(std::istream& stream, Counter& counter,std::mutex mut);
+void count_words(std::istream& stream, Counter& counter,std::mutex& mut);
 
 void print_topk(std::ostream& stream, const Counter&, const size_t k);
 
@@ -41,7 +42,7 @@ int main(int argc, char* argv[]) {
                 return EXIT_FAILURE;
             }
             
-            thr_vec.emplace_back(count_words,std::move(input), std::ref(freq_dict),std::ref(m));
+            thr_vec.emplace_back(count_words,std::move(input), std::ref(freq_dict));
             std::cout << argv[i] << std::endl;
         }
         for (auto& ptr: thr_vec) {
@@ -55,22 +56,17 @@ int main(int argc, char* argv[]) {
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << "Elapsed time is " << elapsed_ms.count() << " us\n";
 
-    thr_vec.at(0).join();
-    thr_vec.at(1).join();
-    thr_vec.at(2).join();
-}
+}       
 
-void count_words(std::istream& stream, Counter& counter,std::mutex mut) {
+void count_words(std::istream& stream, Counter& counter, std::mutex& mut) {
     Counter temp;
     std::for_each(std::istream_iterator<std::string>(stream),
         std::istream_iterator<std::string>(),
         [& temp](const std::string& s) {
             ++temp[s];
         });
-    mut.lock();
+    const std::lock_guard<std::mutex> lock(m);
     counter = std::move(temp);
-    mut.unlock();
-
 }
 
 void print_topk(std::ostream& stream, const Counter& counter, const size_t k) {
