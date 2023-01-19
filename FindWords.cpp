@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     else {    
-        thr_vec.reserve(argc-1);
+        //thr_vec.reserve(argc);
         for (int i = 1; i < argc; ++i) {
             std::ifstream input{ argv[i] };
             if (!input.is_open()) {
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
                 return EXIT_FAILURE;
             }
             auto work = [&freq_dict](std::istream& in) {count_words(std::move(in), freq_dict); };
-            thr_vec.emplace_back(work,std::move(input));
+            thr_vec.push_back(std::thread (std::move(work),std::move(input)));
             std::cout << argv[i] << std::endl;
         }
         for (auto& ptr: thr_vec) {
