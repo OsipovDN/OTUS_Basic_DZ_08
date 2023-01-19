@@ -18,7 +18,7 @@
 const size_t TOPK = 10;
 
 using Counter = std::map<std::string, std::size_t>;
-void count_words(std::istream& stream, Counter& counter);
+void count_words(std::istream& stream, Counter& counter, std::mutex& mut);
 void print_topk(std::ostream& stream, const Counter&, const size_t k);
 
 int main(int argc, char* argv[]) {
@@ -31,35 +31,42 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     else {    
-        //thr_vec.reserve(argc);
+        //thr_vec.reserve(argc-1);
         for (int i = 1; i < argc; ++i) {
             std::ifstream input{ argv[i] };
             if (!input.is_open()) {
                 std::cerr << "Failed to open file " << argv[i] << '\n';
                 return EXIT_FAILURE;
             }
-            auto work = [&freq_dict](std::istream& in) {count_words(std::move(in), freq_dict); };
-            thr_vec.push_back(std::thread (std::move(work),std::move(input)));
+            auto work = [&input, &freq_dict, &dict_m]()mutable {
+                count_words(std::move(input), std::ref(freq_dict), std::ref(dict_m));
+            };
+
+            thr_vec.push_back(std::thread (std::move(work)));
             std::cout << argv[i] << std::endl;
         }
-        for (auto& ptr: thr_vec) {
-            ptr.join();
-        }
-    }
         
+    }
+    for (auto& ptr : thr_vec) {
+        ptr.join();
+        
+    }
+
     print_topk(std::cout, freq_dict, TOPK);
     auto end = std::chrono::high_resolution_clock::now();
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << "Elapsed time is " << elapsed_ms.count() << " us\n";
-
 }       
 
-void count_words(std::istream& stream, Counter& counter) {
+void count_words(std::istream& stream, Counter& counter,std::mutex& mut) {
+    std::cout << 1 << std::endl;
     std::for_each(std::istream_iterator<std::string>(stream),
         std::istream_iterator<std::string>(),
-        [& counter](const std::string& s) {
+        [&counter,&mut](const std::string& s) {
+        std::lock_guard<std::mutex> lock(mut);
             ++counter[s];
         });
+    std::cout << 2 << std::endl;
 }
 
 
