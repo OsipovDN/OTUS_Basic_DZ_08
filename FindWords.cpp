@@ -18,6 +18,7 @@
 const size_t TOPK = 10;
 
 using Counter = std::map<std::string, std::size_t>;
+void sum_words(Counter&& temp, Counter& counter,std::mutex& m);
 void count_words(std::istream& stream, Counter& counter);
 void count_words(std::istream& stream, Counter& counter,std::mutex& m);
 void print_topk(std::ostream& stream, const Counter&, const size_t k);
@@ -32,7 +33,7 @@ int main(int argc, char* argv[]) {
         if (argc == 2) {
             std::ifstream input(argv[1]);
             if (!input.is_open()) {
-                std::cerr << "Failed to open file " << argv[i] << '\n';
+                std::cerr << "Failed to open file " << argv[1] << '\n';
                 return EXIT_FAILURE;
             }
             count_words(input, freq_dict);
@@ -62,6 +63,13 @@ int main(int argc, char* argv[]) {
     std::cout << "Elapsed time is " << elapsed_ms.count() << " us\n";
 }       
 
+void sum_words(Counter&& temp, Counter& counter, std::mutex& m) {
+    std::lock_guard Lock(m);
+    for (auto ittemp : temp) {
+        counter[ittemp.first] += ittemp.second;
+    }
+}
+
 void count_words(std::istream& stream, Counter& counter) {
     std::for_each(std::istream_iterator<std::string>(stream),
         std::istream_iterator<std::string>(),
@@ -71,19 +79,13 @@ void count_words(std::istream& stream, Counter& counter) {
 }
 
 void count_words(std::istream& stream, Counter& counter, std::mutex& m) {
+    Counter temp;
     std::for_each(std::istream_iterator<std::string>(stream),
         std::istream_iterator<std::string>(),
-        [&counter,&m](const std::string& s) {
-            std::lock_guard lock(m);
-            ++counter[s];
+        [&temp](const std::string& s) {
+            ++temp[s];
         });
-}
-void count_words(std::istream& stream, Counter& counter) {
-    std::for_each(std::istream_iterator<std::string>(stream),
-        std::istream_iterator<std::string>(),
-        [&counter](const std::string& s) {
-            ++counter[s];
-        });
+    sum_words(std::move(temp),counter, m);
 }
 
 void print_topk(std::ostream& stream, const Counter& counter, const size_t k) {
