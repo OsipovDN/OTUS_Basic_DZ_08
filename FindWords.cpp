@@ -48,14 +48,12 @@ int main(int argc, char* argv[]) {
 }       
 
 void count_words(std::istream& stream, Counter& counter, std::mutex& m) {
-    std::cout << 1 << std::endl;
     std::for_each(std::istream_iterator<std::string>(stream),
         std::istream_iterator<std::string>(),
         [&counter,&m](const std::string& s) {
             std::lock_guard Lock(m);
             ++counter[s];
         });
-    std::cout << 2 << std::endl;
 }
 
 
