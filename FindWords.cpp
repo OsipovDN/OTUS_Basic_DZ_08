@@ -56,11 +56,6 @@ int main(int argc, char* argv[]) {
     for (auto& it : thr_vec) {
         it.join();
     }
-    auto col=0;
-    for (const auto it : freq_dict) {
-        col += it.second;
-    }
-    std::cout << col << std::endl;
 
     print_topk(std::cout, freq_dict, TOPK);
     auto end = std::chrono::high_resolution_clock::now();
