@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.8)
 project (countWords)
 
 add_executable (countWords 
-    src/FindWords.cpp
+    FindWords.cpp
     )
 
 set_target_properties(countWords PROPERTIES
