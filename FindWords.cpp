@@ -34,7 +34,11 @@ int main(int argc, char* argv[]) {
     else {    
         for (auto i = 1; i < argc; ++i) {
             std::ifstream input(argv[i]);
-            thr_vec.emplace_back(std::move(count_words), std::move(input), std::ref(freq_dict),std::ref(freq_dict_mut));
+            auto work = [&freq_dict, &freq_dict_mut](std::ifstream in)mutable {
+                count_words(in, freq_dict, freq_dict_mut); 
+            };
+            thr_vec.push_back(std::thread(std::move(work),std::move(input)));
+            //thr_vec.emplace_back(std::move(count_words), std::move(input), std::ref(freq_dict),std::ref(freq_dict_mut));
         }   
     }
     for (auto& it : thr_vec) {
