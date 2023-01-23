@@ -62,6 +62,14 @@ int main(int argc, char* argv[]) {
     std::cout << "Elapsed time is " << elapsed_ms.count() << " us\n";
 }       
 
+void count_words(std::istream& stream, Counter& counter) {
+    std::for_each(std::istream_iterator<std::string>(stream),
+        std::istream_iterator<std::string>(),
+        [&counter](const std::string& s) {
+            ++counter[s];
+        });
+}
+
 void count_words(std::istream& stream, Counter& counter, std::mutex& m) {
     std::for_each(std::istream_iterator<std::string>(stream),
         std::istream_iterator<std::string>(),
@@ -77,8 +85,6 @@ void count_words(std::istream& stream, Counter& counter) {
             ++counter[s];
         });
 }
-
-
 
 void print_topk(std::ostream& stream, const Counter& counter, const size_t k) {
     std::vector<Counter::const_iterator> words;
