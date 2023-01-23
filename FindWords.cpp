@@ -18,6 +18,7 @@
 const size_t TOPK = 10;
 
 using Counter = std::map<std::string, std::size_t>;
+std::string tolower(const std::string& str);
 void sum_words(Counter&& temp, Counter& counter,std::mutex& m);
 void count_words(std::istream& stream, Counter& counter);
 void count_words(std::istream& stream, Counter& counter,std::mutex& m);
@@ -46,22 +47,34 @@ int main(int argc, char* argv[]) {
     else {    
         for (auto i = 1; i < argc; ++i) {
             std::ifstream input(argv[i]);
-            auto work = [&freq_dict, &freq_dict_mut](std::ifstream in)mutable {
+            auto work = [&freq_dict, &freq_dict_mut, in=std::move(input)]()mutable {
                 count_words(in, freq_dict, freq_dict_mut); 
             };
-            thr_vec.push_back(std::thread(std::move(work),std::move(input)));
-            //thr_vec.emplace_back(std::move(count_words), std::move(input), std::ref(freq_dict),std::ref(freq_dict_mut));
+            thr_vec.emplace_back(std::move(work));
         }   
     }
     for (auto& it : thr_vec) {
         it.join();
     }
+    auto col=0;
+    for (const auto it : freq_dict) {
+        col += it.second;
+    }
+    std::cout << col << std::endl;
 
     print_topk(std::cout, freq_dict, TOPK);
     auto end = std::chrono::high_resolution_clock::now();
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     std::cout << "Elapsed time is " << elapsed_ms.count() << " us\n";
-}       
+}
+
+std::string tolower(const std::string& str) {
+    std::string lower_str;
+    std::transform(std::cbegin(str), std::cend(str),
+        std::back_inserter(lower_str),
+        [](unsigned char ch) { return std::tolower(ch); });
+    return lower_str;
+};
 
 void sum_words(Counter&& temp, Counter& counter, std::mutex& m) {
     std::lock_guard Lock(m);
@@ -74,7 +87,7 @@ void count_words(std::istream& stream, Counter& counter) {
     std::for_each(std::istream_iterator<std::string>(stream),
         std::istream_iterator<std::string>(),
         [&counter](const std::string& s) {
-            ++counter[s];
+            ++counter[tolower(s)];
         });
 }
 
@@ -83,7 +96,7 @@ void count_words(std::istream& stream, Counter& counter, std::mutex& m) {
     std::for_each(std::istream_iterator<std::string>(stream),
         std::istream_iterator<std::string>(),
         [&temp](const std::string& s) {
-            ++temp[s];
+            ++temp[tolower(s)];
         });
     sum_words(std::move(temp),counter, m);
 }
